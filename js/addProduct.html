@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Product</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="row">
+    <div class="col-6 offset-3">
+        <div class="card m-2">
+            <div id="head-text" class="card-header bg-dark text-white text-center">
+                Add Product
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <label class="mb-2">
+                        <img id="img" src="images/default.jpg" alt="not image" width="150" height="150">
+                        <input style="display: none" onchange="uploadFile(event)" type="file">
+                    </label>
+                </div>
+
+                <form onsubmit="saveProduct(event)">
+                    <div class="mb-2">
+                        <input placeholder="Name" type="text" class="form-control">
+                    </div>
+                    <div class="mb-2">
+                        <input placeholder="Price" type="number" class="form-control">
+                    </div>
+                    <div class="mb-2">
+                        <select id="select_category" class="form-select"></select>
+                    </div>
+                    <button class="btn btn-dark">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    getAllCategories()
+
+    let params = new URLSearchParams(new URL(window.location.href).search);
+    let currentProductId = params.get("productId");
+    let photoId = "";
+    let img = document.getElementById("img");
+    let select_category = document.getElementById("select_category");
+    let heading = document.getElementById("head-text");
+
+    if (currentProductId) {
+        heading.innerText="Update Product"
+        axios({
+            url: "http://localhost:8080/product/" + currentProductId,
+            method: "get"
+        }).then(res => {
+            let product = res.data;
+            let form = document.forms[0];
+            form[0].value = product.name;
+            form[1].value = product.price;
+            form[2].value = product.category.id;
+            photoId=product.photo.id;
+            img.src = "http://localhost:8080/file/" + product.photo.id;
+        })
+    }
+
+
+
+
+    function saveProduct(event) {
+        event.preventDefault();
+        if (photoId) {
+            axios({
+                url:currentProductId?"http://localhost:8080/product/"+currentProductId: "http://localhost:8080/product",
+                method: currentProductId?"put":"post",
+                data: {
+                    name: event.target[0].value,
+                    price: event.target[1].value,
+                    categoryId: event.target[2].value,
+                    attachmentId: photoId
+                }
+            }).then(res => {
+                let a = document.createElement("a");
+                a.href = "admin.html";
+                a.click();
+            })
+        } else {
+            alert("rasm tanlavoring")
+        }
+    }
+
+    function getAllCategories() {
+        axios.get('http://localhost:8080/category')
+            .then(res => {
+                let s = "";
+                s += `<option selected disabled>Select Category</option>`
+                for (let item of res.data) {
+                    s += `<option value="${item.id}" >${item.name}</option>`
+                }
+                select_category.innerHTML = s;
+            })
+
+
+    }
+
+    function uploadFile(event) {
+        let file = event.target.files[0];
+        let formData = new FormData();
+        formData.append("file", file);
+        axios.post('http://localhost:8080/file', formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        }).then(res => {
+            photoId = res.data;
+            img.src = 'http://localhost:8080/file/' + res.data;
+        })
+    }
+</script>
+
+</body>
+</html>

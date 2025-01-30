@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Product</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="row">
+    <div class="col-6 offset-3">
+        <div class="card m-2">
+            <div id="head-text" class="card-header bg-dark text-white text-center">
+                Add Category
+            </div>
+            <div class="card-body">
+               <form onsubmit="saveProduct(event)">
+                    <div class="mb-2">
+                        <input placeholder="Name" type="text" class="form-control">
+                    </div>
+                    <button class="btn btn-dark">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+
+    let params = new URLSearchParams(new URL(window.location.href).search);
+    let currentCategoryId = params.get("categoryId");
+    let heading = document.getElementById("head-text");
+
+    if (currentCategoryId) {
+        heading.innerText="Update Category"
+        axios({
+            url: "http://localhost:8080/category/" + currentCategoryId,
+            method: "get"
+        }).then(res => {
+            let category = res.data;
+            console.log(category)
+            let form = document.forms[0];
+            form[0].value = category.name;
+        })
+    }
+    function saveProduct(event){
+        event.preventDefault();
+            axios({
+                url:currentCategoryId?"http://localhost:8080/category/"+currentCategoryId: "http://localhost:8080/category",
+                method: currentCategoryId?"put":"post",
+                data:{
+                    name:event.target[0].value,
+                }
+            }).then(res=>{
+                let a=document.createElement("a");
+                a.href="admin.html";
+                a.click();
+            })
+    }
+</script>
+
+</body>
+</html>

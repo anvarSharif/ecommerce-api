@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Page</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+<h1 class="text-center bg-dark text-white">Admin Page</h1>
+
+
+<div class="container m-2">
+    <a href="home.html" class="btn btn-outline-secondary">Go Home</a>
+
+    <div class="row">
+        <div class="col-3 card">
+            <div class="list-group">
+                <button onclick="showCategories()" class="btn btn-dark mb-2">Category</button>
+                <button onclick="showProducts()" class="btn btn-dark mb-2">Product</button>
+            </div>
+        </div>
+        <div class="col-9 card">
+
+            <div class="d-flex justify-content-between mb-3">
+                <h2 class="text-center" id="header-text"></h2>
+                <a id="addProductButton" class="m-2 btn btn-success" href="addProduct.html" style="display:none;">Add Product</a>
+                <a id="addCategoryButton" class="m-2 btn btn-success" href="addCategory.html" style="display:none;">Add Category</a>
+            </div>
+
+            <table class="table table-striped">
+                <thead class="thead-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    const tbody = document.getElementById('tbody');
+    let categories = [];
+    let products = [];
+    let header_text=document.getElementById("header-text");
+
+    function showCategories() {
+        document.getElementById('addCategoryButton').style.display = 'inline-block';
+        document.getElementById('addProductButton').style.display = 'none';
+
+        axios.get('http://localhost:8080/category')
+            .then(res => {
+                header_text.value='Category List'
+                categories = res.data;
+                drawCategories();
+            })
+    }
+
+    function showProducts() {
+        document.getElementById('addProductButton').style.display = 'inline-block';
+        document.getElementById('addCategoryButton').style.display = 'none';
+        axios.get('http://localhost:8080/product')
+            .then(res => {
+                products = res.data;
+                drawProducts();
+            })
+    }
+
+    function drawCategories() {
+        console.log(categories)
+        let rows = '';
+        categories.forEach(category => {
+            rows += `
+            <tr>
+                <td>${category.name}</td>
+                <td>
+                    <div class="d-flex">
+                        <button class="btn btn-danger mr-2" onclick="deleteCategory(${category.id})">Delete</button>
+                        <a href="addCategory.html?categoryId=${category.id}" class="btn btn-dark mx-2" onclick="updateCategory(${category.id})">Update</a>
+                    </div>
+                </td>
+            </tr>`;
+        });
+        tbody.innerHTML = rows;
+        console.log(rows)
+    }
+
+    function drawProducts() {
+        let rows = '';
+        products.forEach(item => {
+            console.log(products)
+            rows += `
+            <tr>
+                <td>${item.name}</td>
+                <td>${item.price}</td>
+                <td>${item.category.name}</td>
+
+                <td>
+                    <div class="d-flex">
+                        <button class="btn btn-danger mr-2" onclick="deleteProduct(${item.id})">Delete</button>
+                        <a href="addProduct.html?productId=${item.id}" class="btn btn-dark mx-2">Update</a>
+                    </div>
+                </td>
+            </tr>`;
+        });
+        tbody.innerHTML = rows;
+    }
+
+    function deleteCategory(id) {
+        axios({
+            url:`http://localhost:8080/category/`+id,
+            method:"DELETE",
+        }).then(res=>{
+            showCategories();
+        })
+    }
+
+
+    function updateCategory(id) {
+        window.location.href = `/category/update?categoryId=${id}`;
+    }
+
+    function deleteProduct(id) {
+        axios({
+            url:`http://localhost:8080/product/`+id,
+            method:"DELETE",
+            }).then(res=>{
+            showProducts();
+        })
+    }
+
+    function addCategory() {
+        window.location.href = '/category/add';
+    }
+
+    function logout() {
+        axios.post('/auth/logout')
+            .then(() => window.location.href = '/login')
+    }
+
+</script>
+
+</body>
+</html>

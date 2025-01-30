@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>E-commerce</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid d-flex align-items-center justify-content-between">
+        <a class="navbar-brand" href="/home">Online Shop</a>
+        <div class="d-flex align-items-center">
+            <div id="auth-section" class="d-flex align-items-center"></div>
+        </div>
+    </div>
+</nav>
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <a href="admin.html" class="text-center btn btn-dark">
+                Admin page
+            </a>
+            <div class="card">
+                <div class="card-header bg-dark text-white text-center">
+                    <h5>Categories</h5>
+                </div>
+                <div class="list-group list-group-flush" id="category-list"></div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a href="order.html" class="btn btn-dark">Order</a>
+                <div id="basket-section"></div>
+            </div>
+            <div class="row g-3" id="product-list"></div>
+        </div>
+
+    </div>
+</div>
+<footer class="text-center mt-5 text-muted">
+    <p>&copy; 2025.01.27 My E-commerce</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    const authSection = document.getElementById('auth-section');
+    const categoryList = document.getElementById('category-list');
+    const productList = document.getElementById('product-list');
+    const basketSection = document.getElementById('basket-section');
+
+    let categories = [];
+    let products = [];
+
+
+    function fetchCategories() {
+        axios.get('http://localhost:8080/category').then(response => {
+            categories = response.data;
+            drawCategories();
+        });
+    }
+
+    function fetchProducts() {
+        if (event){
+            event.preventDefault();
+        }
+        axios.get('http://localhost:8080/product').then(response => {
+            products = response.data;
+            drawProducts();
+        });
+    }
+
+
+
+    function drawCategories() {
+        let content = '<form onsubmit="fetchProducts(event)"><button class="list-group-item list-group-item-action">All</button></form>';
+        categories.forEach(category => {
+            content += `
+                <form onsubmit="getProductForCategory(event)">
+                    <input type="hidden" name="categoryId" value="${category.id}">
+                    <button class="list-group-item list-group-item-action">${category.name}</button>
+                </form>`;
+        });
+        categoryList.innerHTML = content;
+    }
+
+    function getProductForCategory(event) {
+        event.preventDefault();
+        axios({
+            url: 'http://localhost:8080/product',
+            method: "get",
+            params: {
+                categoryId: event.target[0].value
+            }
+        }).then(res => {
+            products = res.data;
+            drawProducts();
+        })
+    }
+
+    function drawProducts() {
+        let content = '';
+        const basket = JSON.parse(localStorage.getItem('basket')) || []; // Savatchani olish
+
+        for (let product of products) {
+            const isInBasket = basket.some(item => item.id === product.id); // Mahsulot savatchada bormi, tekshirish
+            content += `
+        <div class="col-md-3">
+            <div class="card h-100">
+                <img src="http://localhost:8080/file/${product.photo?.id}" class="card-img-top" alt="Product Image" style="height: 200px; object-fit: cover;">
+                <div class="card-body text-center">
+                    <h5 class="card-title">${product.name}</h5>
+                    <p class="card-text">Price: <strong>${product.price} UZS</strong></p>
+                    ${isInBasket ? `
+                        <button class="btn btn-danger w-100" onclick="removeFromBasket(${product.id})">Remove</button>` : `
+                        <button class="btn btn-dark w-100" onclick="addToBasket(${product.id}, '${product.name}', ${product.price},${product.photo.id})">Add to Basket</button>`}
+                </div>
+            </div>
+        </div>`;
+        }
+        productList.innerHTML = content;
+    }
+
+    function addToBasket(productId, productName, productPrice,productPhotoId) {
+        let basket = JSON.parse(localStorage.getItem('basket')) || [];
+        const existingProduct = basket.find(item => item.id === productId);
+        if (!existingProduct) {
+            basket.push({ id: productId, name: productName,photoId: productPhotoId, price: productPrice, quantity: 1 });
+        }
+        localStorage.setItem('basket', JSON.stringify(basket));
+        drawBasket();
+        drawProducts();
+    }
+
+    function removeFromBasket(productId) {
+        let basket = JSON.parse(localStorage.getItem('basket')) || [];
+        basket = basket.filter(item => item.id !== productId);
+        localStorage.setItem('basket', JSON.stringify(basket));
+        drawBasket();
+        drawProducts();
+    }
+
+    function drawBasket() {
+        const basket = JSON.parse(localStorage.getItem('basket')) || [];
+        const uniqueItemsCount = basket.length;
+        basketSection.innerHTML = `<a href="basket.html" class="btn btn-dark">Basket (<span>${uniqueItemsCount}</span>)</a>`;
+    }
+    fetchCategories();
+    fetchProducts()
+    drawBasket();
+</script>
+</body>
+</html>
