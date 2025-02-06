@@ -48,9 +48,13 @@
         const seconds = ('0' + date.getSeconds()).slice(-2);
         return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     }
-
-    // Get orders from the server
-    axios.get('http://localhost:8080/order')
+    axios({
+        url: "http://localhost:8080/order",
+        method: "get",
+        headers:{
+            "Authorization":localStorage.getItem("token")
+        }
+    })
         .then(response => {
             const orders = response.data;
             const ordersList = document.getElementById('orders-list');

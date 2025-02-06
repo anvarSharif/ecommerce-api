@@ -8,16 +8,17 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid d-flex align-items-center justify-content-between">
-        <a class="navbar-brand" href="/home">Online Shop</a>
+        <a class="navbar-brand" href="home.html">Online Shop</a>
         <div class="d-flex align-items-center">
-            <div id="auth-section" class="d-flex align-items-center"></div>
+            <a id="login-section" class="btn btn-dark">Login</a>
+            <div id="auth-section" class="text-white d-flex align-items-center"></div>
         </div>
     </div>
 </nav>
 <div class="container-fluid mt-4">
     <div class="row">
         <div class="col-md-3">
-            <a href="admin.html" class="text-center btn btn-dark">
+            <a id="admin-section" href="admin.html" class="text-center btn btn-success">
                 Admin page
             </a>
             <div class="card">
@@ -29,7 +30,7 @@
         </div>
         <div class="col-md-9">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <a href="order.html" class="btn btn-dark">Order</a>
+                <a id="order-section" href="order.html" class="btn btn-dark">Order</a>
                 <div id="basket-section"></div>
             </div>
             <div class="row g-3" id="product-list"></div>
@@ -44,13 +45,70 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
     const authSection = document.getElementById('auth-section');
+    const adminPageButton = document.getElementById('admin-section');
+    const loginPageButton = document.getElementById('login-section');
+    const orderPageButton = document.getElementById('order-section');
     const categoryList = document.getElementById('category-list');
     const productList = document.getElementById('product-list');
     const basketSection = document.getElementById('basket-section');
 
     let categories = [];
     let products = [];
+    let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    showAdminPageButton(currentUser);
+    showOrderPageButton(currentUser);
+    showCurrentUser();
+    updateLoginPageButton()
 
+    function showCurrentUser() {
+        if (currentUser) {
+            authSection.innerHTML = `
+            <div style="display: flex; align-items: center;">
+                <img src="http://localhost:8080/file/${currentUser.photoId}"
+                     style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 10px;">
+                <h5>${currentUser.fullName}</h5>
+            </div>
+        `;
+        }
+    }
+
+    function showAdminPageButton() {
+        if (currentUser) {
+            if (currentUser.roles && currentUser.roles.includes('ROLE_ADMIN')) {
+
+                adminPageButton.style.display = 'block';
+            } else {
+                adminPageButton.style.display = 'none';
+            }
+        } else {
+            adminPageButton.style.display = 'none';
+        }
+    }
+
+    function showOrderPageButton() {
+        if (currentUser) {
+            orderPageButton.style.display = 'block';
+        } else {
+            orderPageButton.style.display = 'none';
+        }
+    }
+
+    function updateLoginPageButton() {
+        if (currentUser) {
+            loginPageButton.innerText = "Logout";
+            loginPageButton.onclick = function () {
+                localStorage.clear();
+                currentUser = null;
+                loginPageButton.innerText = "Login";
+                location.reload();
+            };
+        } else {
+            loginPageButton.innerText = "Login";
+            loginPageButton.onclick = function () {
+                window.location.href = "login.html"
+            }
+        }
+    }
 
     function fetchCategories() {
         axios.get('http://localhost:8080/category').then(response => {
@@ -60,7 +118,7 @@
     }
 
     function fetchProducts() {
-        if (event){
+        if (event) {
             event.preventDefault();
         }
         axios.get('http://localhost:8080/product').then(response => {
@@ -68,7 +126,6 @@
             drawProducts();
         });
     }
-
 
 
     function drawCategories() {
@@ -120,11 +177,11 @@
         productList.innerHTML = content;
     }
 
-    function addToBasket(productId, productName, productPrice,productPhotoId) {
+    function addToBasket(productId, productName, productPrice, productPhotoId) {
         let basket = JSON.parse(localStorage.getItem('basket')) || [];
         const existingProduct = basket.find(item => item.id === productId);
         if (!existingProduct) {
-            basket.push({ id: productId, name: productName,photoId: productPhotoId, price: productPrice, quantity: 1 });
+            basket.push({id: productId, name: productName, photoId: productPhotoId, price: productPrice, quantity: 1});
         }
         localStorage.setItem('basket', JSON.stringify(basket));
         drawBasket();
@@ -144,6 +201,7 @@
         const uniqueItemsCount = basket.length;
         basketSection.innerHTML = `<a href="basket.html" class="btn btn-dark">Basket (<span>${uniqueItemsCount}</span>)</a>`;
     }
+
     fetchCategories();
     fetchProducts()
     drawBasket();

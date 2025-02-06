@@ -40,20 +40,23 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="js/request.js"></script>
 <script>
     getAllCategories()
 
-    let params = new URLSearchParams(new URL(window.location.href).search);
-    let currentProductId = params.get("productId");
+
     let photoId = "";
     let img = document.getElementById("img");
     let select_category = document.getElementById("select_category");
     let heading = document.getElementById("head-text");
 
+    let params = new URLSearchParams(new URL(window.location.href).search);
+    let currentProductId = params.get("productId");
+
     if (currentProductId) {
         heading.innerText="Update Product"
-        axios({
-            url: "http://localhost:8080/product/" + currentProductId,
+        request({
+            url: "/product/" + currentProductId,
             method: "get"
         }).then(res => {
             let product = res.data;
@@ -72,8 +75,8 @@
     function saveProduct(event) {
         event.preventDefault();
         if (photoId) {
-            axios({
-                url:currentProductId?"http://localhost:8080/product/"+currentProductId: "http://localhost:8080/product",
+            request({
+                url:currentProductId?"/product/"+currentProductId: "/product",
                 method: currentProductId?"put":"post",
                 data: {
                     name: event.target[0].value,
@@ -92,7 +95,7 @@
     }
 
     function getAllCategories() {
-        axios.get('http://localhost:8080/category')
+        request.get('/category')
             .then(res => {
                 let s = "";
                 s += `<option selected disabled>Select Category</option>`
@@ -109,14 +112,16 @@
         let file = event.target.files[0];
         let formData = new FormData();
         formData.append("file", file);
-        axios.post('http://localhost:8080/file', formData, {
+        request.post('/file', formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
             },
         }).then(res => {
-            photoId = res.data;
-            img.src = 'http://localhost:8080/file/' + res.data;
-        })
+           photoId = res.data;
+            img.src = `${request.defaults.baseURL}/file/${photoId}`;
+        }).catch(error => {
+            console.error("File upload error:", error);
+        });
     }
 </script>
 

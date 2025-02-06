@@ -27,6 +27,7 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="js/request.js"></script>
 <script>
 
     let params = new URLSearchParams(new URL(window.location.href).search);
@@ -35,8 +36,8 @@
 
     if (currentCategoryId) {
         heading.innerText="Update Category"
-        axios({
-            url: "http://localhost:8080/category/" + currentCategoryId,
+        request({
+            url: "/category/" + currentCategoryId,
             method: "get"
         }).then(res => {
             let category = res.data;
@@ -47,16 +48,14 @@
     }
     function saveProduct(event){
         event.preventDefault();
-            axios({
-                url:currentCategoryId?"http://localhost:8080/category/"+currentCategoryId: "http://localhost:8080/category",
+            request({
+                url:currentCategoryId?"/category/"+currentCategoryId: "/category",
                 method: currentCategoryId?"put":"post",
                 data:{
                     name:event.target[0].value,
                 }
             }).then(res=>{
-                let a=document.createElement("a");
-                a.href="admin.html";
-                a.click();
+               window.location.href="admin.html"
             })
     }
 </script>

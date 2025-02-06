@@ -23,8 +23,10 @@
 
             <div class="d-flex justify-content-between mb-3">
                 <h2 class="text-center" id="header-text"></h2>
-                <a id="addProductButton" class="m-2 btn btn-success" href="addProduct.html" style="display:none;">Add Product</a>
-                <a id="addCategoryButton" class="m-2 btn btn-success" href="addCategory.html" style="display:none;">Add Category</a>
+                <a id="addProductButton" class="m-2 btn btn-success" href="addProduct.html" style="display:none;">Add
+                    Product</a>
+                <a id="addCategoryButton" class="m-2 btn btn-success" href="addCategory.html" style="display:none;">Add
+                    Category</a>
             </div>
 
             <table class="table table-striped">
@@ -42,19 +44,20 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="js/request.js"></script>
 <script>
     const tbody = document.getElementById('tbody');
     let categories = [];
     let products = [];
-    let header_text=document.getElementById("header-text");
+    let header_text = document.getElementById("header-text");
 
     function showCategories() {
         document.getElementById('addCategoryButton').style.display = 'inline-block';
         document.getElementById('addProductButton').style.display = 'none';
 
-        axios.get('http://localhost:8080/category')
+        request.get('/category')
             .then(res => {
-                header_text.value='Category List'
+                header_text.value = 'Category List'
                 categories = res.data;
                 drawCategories();
             })
@@ -80,7 +83,7 @@
                 <td>
                     <div class="d-flex">
                         <button class="btn btn-danger mr-2" onclick="deleteCategory(${category.id})">Delete</button>
-                        <a href="addCategory.html?categoryId=${category.id}" class="btn btn-dark mx-2" onclick="updateCategory(${category.id})">Update</a>
+                        <a href="addCategory.html?categoryId=${category.id}" class="btn btn-dark mx-2">Update</a>
                     </div>
                 </td>
             </tr>`;
@@ -111,35 +114,22 @@
     }
 
     function deleteCategory(id) {
-        axios({
-            url:`http://localhost:8080/category/`+id,
-            method:"DELETE",
-        }).then(res=>{
+        request({
+            url: `/category/` + id,
+            method: "DELETE",
+        }).then(res => {
             showCategories();
         })
     }
 
 
-    function updateCategory(id) {
-        window.location.href = `/category/update?categoryId=${id}`;
-    }
-
     function deleteProduct(id) {
-        axios({
-            url:`http://localhost:8080/product/`+id,
-            method:"DELETE",
-            }).then(res=>{
+        request({
+            url: `/product/` + id,
+            method: "DELETE",
+        }).then(res => {
             showProducts();
         })
-    }
-
-    function addCategory() {
-        window.location.href = '/category/add';
-    }
-
-    function logout() {
-        axios.post('/auth/logout')
-            .then(() => window.location.href = '/login')
     }
 
 </script>

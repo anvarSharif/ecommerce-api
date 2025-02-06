@@ -92,7 +92,6 @@
                     </div>
                 </div>`;
         });
-
         basketItems.innerHTML = content;
         totalPriceElement.textContent = `${totalPrice} UZS`;
     }
@@ -134,29 +133,23 @@
                 quantity: item.quantity
             }))
         };
-        console.log(basketDTO);
         axios({
             url: "http://localhost:8080/order",
             method: "post",
+            data: JSON.stringify(basketDTO),
             headers: {
+                "Authorization":localStorage.getItem("token"),
                 "Content-Type": "application/json"
-            },
-            data: basketDTO
-        })
-            .then(response => {
-                console.log('Order successfully created:', response.data);
-                alert('Buyurtmangiz muvaffaqiyatli qabul qilindi!');
-                localStorage.removeItem('basket');
-                drawBasket();
-            })
-            .catch(error => {
-                console.error('Order creation failed:', error);
-                alert('Buyurtma yaratishda xatolik yuz berdi!');
-            });
-        localStorage.removeItem("basket")
-        let orqagaButton = document.getElementById("orqaga");
-        orqagaButton.click();
+            }
+        }).then(response => {
+            alert('Buyurtmangiz muvaffaqiyatli qabul qilindi!');
+            localStorage.removeItem('basket');
+            window.location.href = "home.html";
+        }).catch(error => {
+            window.location.href = "login.html";
+        });
     }
+
     drawBasket();
 </script>
 </body>

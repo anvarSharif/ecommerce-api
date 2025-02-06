@@ -42,23 +42,28 @@
                 Invalid Order ID.
             </div>`;
     } else {
-        axios.get(`http://localhost:8080/orderItem?orderId=${orderId}`)
-            .then(response => {
-                const orderItems = response.data;
-                const orderDetails = document.getElementById('order-details');
-                console.log(orderItems)
-                if (!orderItems) {
-                    orderDetails.innerHTML = `
+        axios({
+            url: `http://localhost:8080/orderItem?orderId=${orderId}`,
+            method: "get",
+            headers: {
+                "Authorization": localStorage.getItem("token")
+            }
+        }).then(response => {
+            const orderItems = response.data;
+            const orderDetails = document.getElementById('order-details');
+            console.log(orderItems)
+            if (!orderItems) {
+                orderDetails.innerHTML = `
                         <div class="alert alert-warning text-center" role="alert">
                             Order not found.
                         </div>`;
-                    return;
-                }
+                return;
+            }
 
-                let totalSum = 0;
+            let totalSum = 0;
 
-                // Display order details
-                orderDetails.innerHTML = `
+            // Display order details
+            orderDetails.innerHTML = `
 
                     <div class="mb-4">
                         <h6 class="fw-bold">Order Items</h6>
@@ -70,14 +75,14 @@
                         <h5 class="fs-4 text-success" id="total_price">0 UZS</h5>
                     </div>`;
 
-                const orderItemsList = document.getElementById('order-items-list');
+            const orderItemsList = document.getElementById('order-items-list');
 
-                // Add each item and calculate total
-                orderItems.forEach(item => {
-                    const itemTotal = item.product.price * item.amount;
-                    totalSum += itemTotal;
+            // Add each item and calculate total
+            orderItems.forEach(item => {
+                const itemTotal = item.product.price * item.amount;
+                totalSum += itemTotal;
 
-                    orderItemsList.innerHTML += `
+                orderItemsList.innerHTML += `
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
                                 <strong>${item.product.name}</strong>
@@ -85,11 +90,11 @@
                             </div>
                             <span>${itemTotal} UZS</span>
                         </li>`;
-                });
+            });
 
-                // Update total price
-                document.getElementById('total_price').textContent = `${totalSum} UZS`;
-            })
+            // Update total price
+            document.getElementById('total_price').textContent = `${totalSum} UZS`;
+        })
             .catch(error => {
                 console.error('Error fetching order:', error);
                 document.getElementById('order-details').innerHTML = `

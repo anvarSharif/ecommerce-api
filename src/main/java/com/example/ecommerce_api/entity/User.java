@@ -4,41 +4,38 @@ package com.example.ecommerce_api.entity;
 import com.example.ecommerce_api.entity.abc.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Collection;
 import java.util.List;
 
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 @Entity
 @Table(name = "users")
-public class User extends BaseEntity {
+public class User extends BaseEntity implements UserDetails {
 
-    private String firstName;
-    private String lastName;
+    private String fullName;
     @Column(unique = true,nullable = false)
-    private String phone;
+    private String username;
 
     private String password;
     @ManyToOne
     private Attachment personalPhoto;
     @ManyToMany(fetch = FetchType.EAGER)
-    private List<Role> role;
+    private List<Role> roles;
 
-    public User(Integer id,String firstName, String lastName, String phone, String password, Attachment personalPhoto, List<Role> role) {
-        super.setId(id);
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.phone = phone;
-        this.password = password;
-        this.personalPhoto = personalPhoto;
-        this.role = role;
-    }
 
-    public String getFullName(){
-        return firstName+" "+lastName;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return this.roles;
     }
 }

@@ -2,9 +2,11 @@ package com.example.ecommerce_api.controller;
 
 import com.example.ecommerce_api.dto.ProductSaveDTO;
 import com.example.ecommerce_api.entity.Product;
+import com.example.ecommerce_api.entity.User;
 import com.example.ecommerce_api.repo.AttachmentRepository;
 import com.example.ecommerce_api.repo.CategoryRepository;
 import com.example.ecommerce_api.repo.ProductRepository;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
